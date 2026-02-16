@@ -1206,7 +1206,7 @@
     </footer>
 
    <script>
-    // Election Data with Student Admission Number System
+   // Election Data with Student Admission Number System
 const electionData = {
     positions: [],
     votes: {},
@@ -1225,7 +1225,7 @@ let lastVisitedSection = 'president';
 // ===== INITIALIZATION =====
 async function initializeVotingData() {
     try {
-        // Fetch positions from Django
+        // Try to fetch from Django first
         const positionsResponse = await fetch('/api/positions/');
         const positionsData = await positionsResponse.json();
         
@@ -1246,45 +1246,129 @@ async function initializeVotingData() {
             });
         });
         
-        // Update UI
-        updateVotingUI();
-        renderVotingCandidates();
-        renderAllCandidatesPage();
-        
-        // Fetch and display results
-        await fetchResults();
+        // Also save to localStorage for backup
+        saveToLocalStorage();
         
     } catch (error) {
-        console.error('Error initializing data:', error);
-        // Fallback to localStorage if Django fails
+        console.error('Django connection failed, using localStorage:', error);
         loadFromLocalStorage();
     }
-}
-
-// Fallback to localStorage if Django is unavailable
-function loadFromLocalStorage() {
-    const savedVotes = localStorage.getItem('studentCouncilVotes');
-    if (savedVotes) {
-        electionData.votes = JSON.parse(savedVotes);
-    }
     
-    const savedVoters = localStorage.getItem('studentCouncilVoters');
-    if (savedVoters) {
-        electionData.voters = JSON.parse(savedVoters);
-    }
-    
-    const savedDeptVotes = localStorage.getItem('studentCouncilDeptVotes');
-    if (savedDeptVotes) {
-        electionData.departmentVotes = JSON.parse(savedDeptVotes);
-    }
-    
-    const votingStatus = localStorage.getItem('studentCouncilVotingStatus');
-    electionData.isVotingActive = votingStatus === 'active';
-    
+    // Update UI regardless of data source
     updateVotingUI();
     renderVotingCandidates();
     renderAllCandidatesPage();
     updateStatistics();
+}
+
+// Load from localStorage (fallback)
+function loadFromLocalStorage() {
+    // Load positions from static data
+    electionData.positions = [
+        {
+            id: "president",
+            title: "School President",
+            candidates: [
+                {
+                    id: "alex-johnson",
+                    name: "Boniface Kathu",
+                    photo: "static/",
+                    agenda: "Mental health support, sustainability, transparent budgeting"
+                },
+                {
+                    id: "samuel-brown",
+                    name: "sammy",
+                    photo: "",
+                    agenda: "School spirit, sports funding, cafeteria improvements"
+                },
+                {
+                    id: "jessica-williams",
+                    name: "Jessy",
+                    photo: "",
+                    agenda: "Technology upgrades, club funding, student discounts"
+                }
+            ]
+        },
+        {
+            id: "secretary",
+            title: "Secretary General",
+            candidates: [
+                {
+                    id: "maria-rodriguez",
+                    name: "precious",
+                    photo: "fgr",
+                    agenda: "Transparent communication, digital archives, mentorship"
+                },
+                {
+                    id: "ryan-miller",
+                    name: "Mulwa",
+                    photo: "",
+                    agenda: "Efficient meetings, better minutes, app development"
+                }
+            ]
+        },
+        {
+            id: "education",
+            title: "Cabinet Secretary for Education",
+            candidates: [
+                {
+                    id: "david-chen",
+                    name: "Mark Vundi",
+                    photo: "static/Mark.jpg",
+                    agenda: "Peer tutoring, digital resources, study skills workshops"
+                },
+                {
+                    id: "sophia-kim",
+                    name: "Kamani",
+                    photo: "no idea",
+                    agenda: "Curriculum diversity, exam support, teacher feedback"
+                }
+            ]
+        }
+    ];
+    
+    // Load votes from localStorage
+    const savedVotes = localStorage.getItem('studentCouncilVotes');
+    if (savedVotes) {
+        electionData.votes = JSON.parse(savedVotes);
+    } else {
+        // Initialize votes
+        electionData.votes = {};
+        electionData.positions.forEach(position => {
+            electionData.votes[position.id] = {};
+            position.candidates.forEach(candidate => {
+                electionData.votes[position.id][candidate.id] = 0;
+            });
+        });
+    }
+    
+    // Load voters from localStorage
+    const savedVoters = localStorage.getItem('studentCouncilVoters');
+    if (savedVoters) {
+        electionData.voters = JSON.parse(savedVoters);
+    } else {
+        electionData.voters = {};
+    }
+    
+    // Load department votes from localStorage
+    const savedDeptVotes = localStorage.getItem('studentCouncilDeptVotes');
+    if (savedDeptVotes) {
+        electionData.departmentVotes = JSON.parse(savedDeptVotes);
+    } else {
+        electionData.departmentVotes = {};
+    }
+    
+    // Load voting status from localStorage
+    const votingStatus = localStorage.getItem('studentCouncilVotingStatus');
+    electionData.isVotingActive = votingStatus === 'active';
+}
+
+// Save to localStorage
+function saveToLocalStorage() {
+    localStorage.setItem('studentCouncilVotes', JSON.stringify(electionData.votes));
+    localStorage.setItem('studentCouncilVoters', JSON.stringify(electionData.voters));
+    localStorage.setItem('studentCouncilDeptVotes', JSON.stringify(electionData.departmentVotes));
+    localStorage.setItem('studentCouncilVotingStatus', electionData.isVotingActive ? 'active' : 'inactive');
 }
 
 // ===== UI UPDATE FUNCTIONS =====
@@ -1295,17 +1379,21 @@ function updateVotingUI() {
     const closedMessage = document.getElementById('closed-voting-message');
     
     if (electionData.isVotingActive) {
-        statusIndicator.className = 'status-indicator active';
-        statusText.textContent = 'ACTIVE';
-        statusText.style.color = '#27ae60';
-        voteContainer.classList.add('active');
-        closedMessage.style.display = 'none';
+        if (statusIndicator) statusIndicator.className = 'status-indicator active';
+        if (statusText) {
+            statusText.textContent = 'ACTIVE';
+            statusText.style.color = '#27ae60';
+        }
+        if (voteContainer) voteContainer.classList.add('active');
+        if (closedMessage) closedMessage.style.display = 'none';
     } else {
-        statusIndicator.className = 'status-indicator';
-        statusText.textContent = 'CLOSED';
-        statusText.style.color = '#e74c3c';
-        voteContainer.classList.remove('active');
-        closedMessage.style.display = 'block';
+        if (statusIndicator) statusIndicator.className = 'status-indicator';
+        if (statusText) {
+            statusText.textContent = 'CLOSED';
+            statusText.style.color = '#e74c3c';
+        }
+        if (voteContainer) voteContainer.classList.remove('active');
+        if (closedMessage) closedMessage.style.display = 'block';
     }
 }
 
@@ -1380,13 +1468,14 @@ function validateVote() {
     });
     
     if (allSelected) {
-        validationMsg.textContent = '';
-        validationMsg.style.color = '#27ae60';
-        submitBtn.disabled = false;
+        if (validationMsg) validationMsg.textContent = '';
+        if (submitBtn) submitBtn.disabled = false;
     } else {
-        validationMsg.textContent = 'Please select a candidate for each position.';
-        validationMsg.style.color = '#e74c3c';
-        submitBtn.disabled = true;
+        if (validationMsg) {
+            validationMsg.textContent = 'Please select a candidate for each position.';
+            validationMsg.style.color = '#e74c3c';
+        }
+        if (submitBtn) submitBtn.disabled = true;
     }
     
     return allSelected;
@@ -1404,127 +1493,95 @@ function authenticateVoter() {
         return;
     }
     
-    document.getElementById('auth-modal').style.display = 'flex';
-    document.getElementById('admission-number').value = '';
-    document.getElementById('department').selectedIndex = 0;
-    document.getElementById('auth-error').style.display = 'none';
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) {
+        authModal.style.display = 'flex';
+        const admissionInput = document.getElementById('admission-number');
+        const departmentSelect = document.getElementById('department');
+        if (admissionInput) admissionInput.value = '';
+        if (departmentSelect) departmentSelect.selectedIndex = 0;
+        
+        const authError = document.getElementById('auth-error');
+        if (authError) authError.style.display = 'none';
+    }
 }
 
 function closeAuthModal() {
-    document.getElementById('auth-modal').style.display = 'none';
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) authModal.style.display = 'none';
 }
 
-async function verifyVoter() {
-    const admissionInput = document.getElementById('admission-number').value.trim().toUpperCase();
-    const department = document.getElementById('department').value;
+function verifyVoter() {
+    const admissionInput = document.getElementById('admission-number')?.value.trim().toUpperCase() || '';
+    const department = document.getElementById('department')?.value || '';
     const errorDiv = document.getElementById('auth-error');
     const errorText = document.getElementById('error-text');
     
     if (!admissionInput || !department) {
-        errorText.textContent = 'Please enter admission number and select department.';
-        errorDiv.style.display = 'block';
+        if (errorText) errorText.textContent = 'Please enter admission number and select department.';
+        if (errorDiv) errorDiv.style.display = 'block';
         return;
     }
     
-    try {
-        const response = await fetch('/api/verify-voter/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                admission_number: admissionInput,
-                department: department
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            await recordVote(admissionInput, department);
-            closeAuthModal();
-        } else {
-            errorText.textContent = data.error;
-            errorDiv.style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error verifying voter:', error);
-        errorText.textContent = 'Server error. Please try again.';
-        errorDiv.style.display = 'block';
+    // Check if valid student
+    if (!electionData.validStudents.includes(admissionInput)) {
+        if (errorText) errorText.textContent = 'Admission number not recognized.';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
     }
+    
+    // Check if already voted
+    if (electionData.voters[admissionInput]) {
+        if (errorText) errorText.textContent = 'This admission number has already voted.';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Record vote locally
+    recordVoteLocal(admissionInput, department);
+    closeAuthModal();
+    showVoteConfirmation(admissionInput);
 }
 
-// ===== VOTE RECORDING (DJANGO VERSION) =====
-async function recordVote(voterID, department) {
-    const votes = [];
+// LocalStorage version of record vote
+function recordVoteLocal(voterID, department) {
+    // Mark voter as voted
+    electionData.voters[voterID] = {
+        department: department,
+        votedAt: new Date().toISOString()
+    };
+    
+    // Update department vote count
+    if (!electionData.departmentVotes[department]) {
+        electionData.departmentVotes[department] = 0;
+    }
+    electionData.departmentVotes[department]++;
+    
+    // Record votes for each position
     electionData.positions.forEach(position => {
         const selectedCandidate = document.querySelector(`input[name="${position.id}"]:checked`);
         if (selectedCandidate) {
-            votes.push({
-                position_id: position.id,
-                candidate_id: selectedCandidate.value
-            });
+            if (!electionData.votes[position.id]) {
+                electionData.votes[position.id] = {};
+            }
+            electionData.votes[position.id][selectedCandidate.value] = 
+                (electionData.votes[position.id][selectedCandidate.value] || 0) + 1;
         }
     });
     
-    try {
-        const response = await fetch('/api/cast-vote/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                admission_number: voterID,
-                votes: votes
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showVoteConfirmation(voterID);
-            await fetchResults();
-        } else {
-            alert('Error: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Error recording vote:', error);
-        alert('Failed to record vote. Please try again.');
-    }
-}
-
-// ===== RESULTS FETCHING =====
-async function fetchResults() {
-    try {
-        const response = await fetch('/api/results/');
-        const data = await response.json();
-        updateStatisticsWithDjangoData(data);
-    } catch (error) {
-        console.error('Error fetching results:', error);
-        updateStatistics(); // Fallback to localStorage stats
-    }
-}
-
-function updateStatisticsWithDjangoData(data) {
-    const statsContainer = document.getElementById('stats-dashboard');
-    if (statsContainer) {
-        statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-value">${data.total_voters || 0}</div>
-                <div class="stat-label">Total Votes Cast</div>
-            </div>
-        `;
-    }
+    // Save to localStorage
+    saveToLocalStorage();
     
-    const deptContainer = document.getElementById('department-breakdown-list');
-    if (deptContainer && data.department_breakdown) {
-        let deptHTML = '';
-        data.department_breakdown.forEach(dept => {
-            deptHTML += `
-                <div class="department-row">
-                    <span class="department-name">${dept.department}</span>
-                    <span class="department-count">${dept.count} vote${dept.count !== 1 ? 's' : ''}</span>
-                </div>
-            `;
-        });
-        deptContainer.innerHTML = deptHTML || '<p style="text-align: center; color: #7f8c8d;">No votes recorded yet.</p>';
-    }
+    // Clear selections
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        radio.checked = false;
+        const candidateOption = radio.closest('.candidate-option');
+        if (candidateOption) candidateOption.classList.remove('selected');
+    });
+    
+    // Update validation and statistics
+    validateVote();
+    updateStatistics();
 }
 
 // ===== CONFIRMATION MODAL =====
@@ -1535,40 +1592,53 @@ function showVoteConfirmation(voterID) {
         if (selectedCandidate) {
             const candidateId = selectedCandidate.value;
             const candidate = position.candidates.find(c => c.id === candidateId);
-            summaryHTML += `<p><strong>${position.title}:</strong> ${candidate.name}</p>`;
+            if (candidate) {
+                summaryHTML += `<p><strong>${position.title}:</strong> ${candidate.name}</p>`;
+            }
         }
     });
     
-    document.getElementById('vote-summary').innerHTML = summaryHTML;
-    document.getElementById('confirmed-voter-id').textContent = voterID;
-    document.getElementById('confirmation-modal').style.display = 'flex';
+    const summaryElement = document.getElementById('vote-summary');
+    if (summaryElement) summaryElement.innerHTML = summaryHTML;
+    
+    const voterIdElement = document.getElementById('confirmed-voter-id');
+    if (voterIdElement) voterIdElement.textContent = voterID;
+    
+    const modal = document.getElementById('confirmation-modal');
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeConfirmationModal() {
-    document.getElementById('confirmation-modal').style.display = 'none';
+    const modal = document.getElementById('confirmation-modal');
+    if (modal) modal.style.display = 'none';
 }
 
-// ===== STATISTICS (LOCALSTORAGE FALLBACK) =====
+// ===== STATISTICS =====
 function updateStatistics() {
     const statsContainer = document.getElementById('stats-dashboard');
     const deptContainer = document.getElementById('department-breakdown-list');
     
     if (!statsContainer || !deptContainer) return;
     
+    // Calculate total votes
     let totalVotes = Object.keys(electionData.voters).length;
     
-    let presidentVotes = 0, secretaryVotes = 0, educationVotes = 0;
+    // Calculate votes per position
+    let presidentVotes = 0;
+    let secretaryVotes = 0;
+    let educationVotes = 0;
     
-    if (electionData.votes.president) {
+    if (electionData.votes && electionData.votes.president) {
         presidentVotes = Object.values(electionData.votes.president).reduce((a, b) => a + b, 0);
     }
-    if (electionData.votes.secretary) {
+    if (electionData.votes && electionData.votes.secretary) {
         secretaryVotes = Object.values(electionData.votes.secretary).reduce((a, b) => a + b, 0);
     }
-    if (electionData.votes.education) {
+    if (electionData.votes && electionData.votes.education) {
         educationVotes = Object.values(electionData.votes.education).reduce((a, b) => a + b, 0);
     }
     
+    // Update stats dashboard
     statsContainer.innerHTML = `
         <div class="stat-card">
             <div class="stat-value">${totalVotes}</div>
@@ -1588,11 +1658,12 @@ function updateStatistics() {
         </div>
     `;
     
+    // Update department breakdown
     let deptHTML = '';
     const departments = [
-        "Automative Engineering", "Agriculture Extensions", "Building and Construction", "Beauty and Hairdressing",
-        "Callinery Arts", "Computing and Informatics", "Electrical Engineering", "Fashion and Design", 
-        "Business and secretarial studies", "Other"
+        "Automative Engineering", "Agriculture Extensions", "Building and Construction", 
+        "Beauty and Hairdressing", "Callinery Arts", "Computing and Informatics", 
+        "Electrical Engineering", "Fashion and Design", "Business and secretarial studies", "Other"
     ];
     
     departments.forEach(dept => {
@@ -1611,7 +1682,7 @@ function updateStatistics() {
 }
 
 function refreshStats() {
-    fetchResults();
+    updateStatistics();
     alert('Statistics refreshed!');
 }
 
@@ -1623,53 +1694,65 @@ function showAdminLogin() {
             lastVisitedSection = s.id.replace("-section", "");
         }
     });
-    document.getElementById("admin-modal").style.display = "block";
+    
+    const adminModal = document.getElementById("admin-modal");
+    if (adminModal) adminModal.style.display = "block";
 }
 
 function closeAdminModal() {
-    document.getElementById('admin-modal').style.display = 'none';
-    document.getElementById('admin-error').style.display = 'none';
-    document.getElementById('admin-username').value = '';
-    document.getElementById('admin-password').value = '';
+    const adminModal = document.getElementById('admin-modal');
+    if (adminModal) adminModal.style.display = 'none';
+    
+    const adminError = document.getElementById('admin-error');
+    if (adminError) adminError.style.display = 'none';
+    
+    const usernameInput = document.getElementById('admin-username');
+    const passwordInput = document.getElementById('admin-password');
+    if (usernameInput) usernameInput.value = '';
+    if (passwordInput) passwordInput.value = '';
 }
 
 function exitAdminPanel() {
-    document.getElementById("admin-panel").style.display = "none";
-    document.getElementById("admin-modal").style.display = "none";
+    const adminPanel = document.getElementById("admin-panel");
+    if (adminPanel) adminPanel.style.display = "none";
+    
+    closeAdminModal();
     showSection(lastVisitedSection);
 }
 
 function verifyAdmin() {
-    const username = document.getElementById("admin-username").value.trim();
-    const password = document.getElementById("admin-password").value.trim();
+    const username = document.getElementById("admin-username")?.value.trim() || '';
+    const password = document.getElementById("admin-password")?.value.trim() || '';
     const adminError = document.getElementById("admin-error");
 
-    if (username === electionData.adminCredentials.username && password === electionData.adminCredentials.password) {
-        adminError.style.display = "none";
-        document.getElementById("admin-modal").style.display = "none";
+    if (username === electionData.adminCredentials.username && 
+        password === electionData.adminCredentials.password) {
+        if (adminError) adminError.style.display = "none";
+        
+        closeAdminModal();
         
         const adminPanel = document.getElementById("admin-panel");
-        adminPanel.style.display = "block";
+        if (adminPanel) adminPanel.style.display = "block";
         
         const sections = document.querySelectorAll(".content-section");
         sections.forEach(s => s.style.display = "none");
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        adminError.style.display = "block";
+        if (adminError) adminError.style.display = "block";
     }
 }
 
 function openVoting() {
     electionData.isVotingActive = true;
-    localStorage.setItem('studentCouncilVotingStatus', 'active');
+    saveToLocalStorage();
     updateVotingUI();
     alert('Voting is now OPEN!');
 }
 
 function pauseVoting() {
     electionData.isVotingActive = false;
-    localStorage.setItem('studentCouncilVotingStatus', 'inactive');
+    saveToLocalStorage();
     updateVotingUI();
     alert('Voting has been PAUSED.');
 }
@@ -1677,7 +1760,7 @@ function pauseVoting() {
 function closeVoting() {
     if (confirm('Are you sure you want to END the voting? This cannot be undone.')) {
         electionData.isVotingActive = false;
-        localStorage.setItem('studentCouncilVotingStatus', 'inactive');
+        saveToLocalStorage();
         updateVotingUI();
         alert('Voting is now CLOSED.');
     }
@@ -1735,12 +1818,16 @@ function viewResults() {
     
     resultsHTML += `</div>`;
     
-    document.getElementById('results-panel').innerHTML = resultsHTML;
-    document.getElementById('results-modal').style.display = 'flex';
+    const resultsPanel = document.getElementById('results-panel');
+    if (resultsPanel) resultsPanel.innerHTML = resultsHTML;
+    
+    const resultsModal = document.getElementById('results-modal');
+    if (resultsModal) resultsModal.style.display = 'flex';
 }
 
 function closeResultsModal() {
-    document.getElementById('results-modal').style.display = 'none';
+    const resultsModal = document.getElementById('results-modal');
+    if (resultsModal) resultsModal.style.display = 'none';
 }
 
 function exportResults() {
@@ -1790,7 +1877,7 @@ function exportResults() {
 }
 
 function resetVotes() {
-    if (confirm('WARNING: This will reset ALL votes, voter records. Are you sure?')) {
+    if (confirm('WARNING: This will reset ALL votes and voter records. Are you sure?')) {
         electionData.positions.forEach(position => {
             electionData.votes[position.id] = {};
             position.candidates.forEach(candidate => {
@@ -1801,11 +1888,9 @@ function resetVotes() {
         electionData.voters = {};
         electionData.departmentVotes = {};
         
-        localStorage.setItem('studentCouncilVotes', JSON.stringify(electionData.votes));
-        localStorage.setItem('studentCouncilVoters', JSON.stringify(electionData.voters));
-        localStorage.setItem('studentCouncilDeptVotes', JSON.stringify(electionData.departmentVotes));
-        
+        saveToLocalStorage();
         updateStatistics();
+        
         alert('All votes and voter records have been reset.');
         viewResults();
     }
@@ -1817,14 +1902,15 @@ function showSection(sectionId) {
         section.style.display = 'none';
     });
     
-    document.getElementById(`${sectionId}-section`).style.display = 'block';
+    const targetSection = document.getElementById(`${sectionId}-section`);
+    if (targetSection) targetSection.style.display = 'block';
     
     document.querySelectorAll('nav a').forEach(link => {
         link.classList.remove('active');
     });
     
     document.querySelectorAll('nav a').forEach(link => {
-        if (link.textContent.includes(sectionId.replace('-', ' ')) || 
+        if (link.textContent.toLowerCase().includes(sectionId.replace('-', ' ')) || 
            (sectionId === 'president' && link.textContent.includes('President')) ||
            (sectionId === 'voting' && link.textContent.includes('Voting')) ||
            (sectionId === 'feedback' && link.textContent.includes('Voice')) ||
@@ -1836,7 +1922,7 @@ function showSection(sectionId) {
     window.scrollTo(0, 0);
     
     if (sectionId === 'stats') {
-        fetchResults();
+        updateStatistics();
     }
 }
 
@@ -1880,8 +1966,8 @@ function startCountdown() {
 
 // ===== FEEDBACK =====
 function submitFeedback() {
-    const department = document.getElementById('feedback-dept').value;
-    const feedback = document.getElementById('feedback').value;
+    const department = document.getElementById('feedback-dept')?.value || '';
+    const feedback = document.getElementById('feedback')?.value || '';
     
     if (!department) {
         alert('Please select a department.');
@@ -1893,22 +1979,40 @@ function submitFeedback() {
         return;
     }
     
-    document.getElementById('confirmation-message').style.display = 'block';
-    document.getElementById('feedback-dept').value = '';
-    document.getElementById('feedback').value = '';
+    const confirmationMsg = document.getElementById('confirmation-message');
+    if (confirmationMsg) confirmationMsg.style.display = 'block';
     
-    document.getElementById('confirmation-message').scrollIntoView({ behavior: 'smooth' });
+    const deptSelect = document.getElementById('feedback-dept');
+    const feedbackInput = document.getElementById('feedback');
+    if (deptSelect) deptSelect.value = '';
+    if (feedbackInput) feedbackInput.value = '';
+    
+    if (confirmationMsg) confirmationMsg.scrollIntoView({ behavior: 'smooth' });
     
     setTimeout(() => {
-        document.getElementById('confirmation-message').style.display = 'none';
+        if (confirmationMsg) confirmationMsg.style.display = 'none';
     }, 5000);
 }
 
 // ===== INITIALIZE =====
 document.addEventListener('DOMContentLoaded', function() {
+    // First show the section
     showSection('president');
-    initializeVotingData();
-    startCountdown();
+    
+    // Then initialize data
+    initializeVotingData().then(() => {
+        console.log('Initialization complete');
+        startCountdown();
+    }).catch(error => {
+        console.error('Initialization error:', error);
+        // Fallback to ensure UI still works
+        loadFromLocalStorage();
+        updateVotingUI();
+        renderVotingCandidates();
+        renderAllCandidatesPage();
+        updateStatistics();
+        startCountdown();
+    });
 });
    </script>
     
