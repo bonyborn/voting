@@ -201,3 +201,7 @@ def reset_election(request):
         
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Unauthorized'})
+
+def index(request):
+    """Serve the main HTML page"""
+    return render(request, 'voting/index.html')

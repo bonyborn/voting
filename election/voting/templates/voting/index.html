@@ -1510,47 +1510,134 @@ function closeAuthModal() {
 }
 
 // Verify voter using admission number
-function verifyVoter() {
+async function verifyVoter() {
     const admissionInput = document.getElementById('admission-number').value.trim().toUpperCase();
     const department = document.getElementById('department').value;
     const errorDiv = document.getElementById('auth-error');
     const errorText = document.getElementById('error-text');
     
-    // Check if admission number is entered
-    if (admissionInput === '') {
-        errorText.textContent = 'Please enter your admission number.';
+    if (!admissionInput || !department) {
+        errorText.textContent = 'Please enter admission number and select department.';
         errorDiv.style.display = 'block';
         return;
     }
     
-    // Check if department is selected
-    if (!department) {
-        errorText.textContent = 'Please select your department.';
+    try {
+        // Verify with Django
+        const response = await fetch('/api/verify-voter/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admission_number: admissionInput,
+                department: department
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Record the vote
+            await recordVote(admissionInput, department);
+            closeAuthModal();
+        } else {
+            errorText.textContent = data.error;
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error verifying voter:', error);
+        errorText.textContent = 'Server error. Please try again.';
         errorDiv.style.display = 'block';
-        return;
     }
+}
+// Record the vote
+// Updated recordVote function for Django
+async function recordVote(voterID, department) {
+    // Get all selected votes
+    const votes = [];
+    electionData.positions.forEach(position => {
+        const selectedCandidate = document.querySelector(`input[name="${position.id}"]:checked`);
+        if (selectedCandidate) {
+            votes.push({
+                position_id: position.id,
+                candidate_id: selectedCandidate.value
+            });
+        }
+    });
     
-    // Check if admission number is valid
-    if (!electionData.validStudents.includes(admissionInput)) {
-        errorText.textContent = 'Admission number not recognized.';
-        errorDiv.style.display = 'block';
-        return;
+    try {
+        // Send vote to Django
+        const response = await fetch('/api/cast-vote/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admission_number: voterID,
+                votes: votes
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update local UI
+            showVoteConfirmation(voterID);
+            
+            // Refresh results from Django
+            await fetchResults();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error recording vote:', error);
+        alert('Failed to record vote. Please try again.');
     }
-    
-    // Check if this admission number has already voted
-    if (electionData.voters[admissionInput]) {
-        errorText.textContent = 'This admission number has already voted.';
-        errorDiv.style.display = 'block';
-        return;
-    }
-    
-    // Record vote
-    recordVote(admissionInput, department);
-    closeAuthModal();
-    showVoteConfirmation(admissionInput);
 }
 
-// Record the vote
+// Fetch results from Django
+async function fetchResults() {
+    try {
+        const response = await fetch('/api/results/');
+        const data = await response.json();
+        
+        // Update your UI with Django data
+        updateStatisticsWithDjangoData(data);
+    } catch (error) {
+        console.error('Error fetching results:', error);
+    }
+}
+
+// Update UI with Django data
+function updateStatisticsWithDjangoData(data) {
+    // Update stats dashboard
+    const statsContainer = document.getElementById('stats-dashboard');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${data.total_voters}</div>
+                <div class="stat-label">Total Votes Cast</div>
+            </div>
+            <!-- Add more stats as needed -->
+        `;
+    }
+    
+    // Update department breakdown
+    const deptContainer = document.getElementById('department-breakdown-list');
+    if (deptContainer && data.department_breakdown) {
+        let deptHTML = '';
+        data.department_breakdown.forEach(dept => {
+            deptHTML += `
+                <div class="department-row">
+                    <span class="department-name">${dept.department}</span>
+                    <span class="department-count">${dept.count} vote${dept.count !== 1 ? 's' : ''}</span>
+                </div>
+            `;
+        });
+        deptContainer.innerHTML = deptHTML;
+    }
+}
 function recordVote(voterID, department) {
     // Mark voter as voted with department info
     electionData.voters[voterID] = {
@@ -1586,6 +1673,41 @@ function recordVote(voterID, department) {
     
     // Update statistics
     updateStatistics();
+}
+async function initializeVotingData() {
+    try {
+        // Fetch positions from Django
+        const positionsResponse = await fetch('/api/positions/');
+        const positionsData = await positionsResponse.json();
+        
+        // Fetch settings
+        const settingsResponse = await fetch('/api/settings/');
+        const settingsData = await settingsResponse.json();
+        
+        // Update electionData
+        electionData.positions = positionsData.positions;
+        electionData.isVotingActive = settingsData.is_voting_active;
+        
+        // Initialize votes object
+        electionData.votes = {};
+        electionData.positions.forEach(position => {
+            electionData.votes[position.id] = {};
+            position.candidates.forEach(candidate => {
+                electionData.votes[position.id][candidate.id] = 0;
+            });
+        });
+        
+        // Update UI
+        updateVotingUI();
+        renderVotingCandidates();
+        renderAllCandidatesPage();
+        
+        // Fetch and display results
+        await fetchResults();
+        
+    } catch (error) {
+        console.error('Error initializing data:', error);
+    }
 }
 
 // Show vote confirmation
