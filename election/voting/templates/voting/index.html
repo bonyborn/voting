@@ -954,7 +954,7 @@
                 <i class="fas fa-lock" style="font-size: 4rem; color: #e74c3c; margin-bottom: 1.5rem;"></i>
                 <h3>Voting is Currently Closed</h3>
                 <p style="max-width: 600px; margin: 1rem auto 2rem;">The online voting system will be activated during the official voting period. Please check back during the election dates or contact the election commission for more information.</p>
-                <div class="election-date" id="next-election-date">Next Election: October 15, 2023</div>
+                <div class="election-date" id="next-election-date">Next Election: March, 2027</div>
             </div>
         </section>
         
@@ -1205,101 +1205,24 @@
         </div>
     </footer>
 
-    <script>
-        // Election Data with Student Admission Number System
+   <script>
+    // Election Data with Student Admission Number System
 const electionData = {
-    positions: [
-        {
-            id: "president",
-            title: "School President",
-            candidates: [
-                {
-                    id: "alex-johnson",
-                    name: "Boniface Kathu",
-                    photo: "static/",
-                    agenda: "Mental health support, sustainability, transparent budgeting"
-                },
-                {
-                    id: "samuel-brown",
-                    name: "sammy",
-                    photo: "",
-                    agenda: "School spirit, sports funding, cafeteria improvements"
-                },
-                {
-                    id: "jessica-williams",
-                    name: "Jessy",
-                    photo: "",
-                    agenda: "Technology upgrades, club funding, student discounts"
-                }
-            ]
-        },
-        {
-            id: "secretary",
-            title: "Secretary General",
-            candidates: [
-                {
-                    id: "maria-rodriguez",
-                    name: "precious",
-                    photo: "fgr",
-                    agenda: "Transparent communication, digital archives, mentorship"
-                },
-                {
-                    id: "ryan-miller",
-                    name: "Mulwa",
-                    photo: "",
-                    agenda: "Efficient meetings, better minutes, app development"
-                }
-            ]
-        },
-        {
-            id: "education",
-            title: "Cabinet Secretary for Education",
-            candidates: [
-                {
-                    id: "david-chen",
-                    name: "Mark Vundi",
-                    photo: "static/Mark.jpg",
-                    agenda: "Peer tutoring, digital resources, study skills workshops"
-                },
-                {
-                    id: "sophia-kim",
-                    name: "Kamani",
-                    photo: "no idea",
-                    agenda: "Curriculum diversity, exam support, teacher feedback"
-                }
-            ]
-        }
-    ],
+    positions: [],
     votes: {},
     isVotingActive: false,
-    voters: {}, // Format: { "NUU001": { department: "Computer Science", votedAt: "2023-10-15T10:30:00" } }
-    departmentVotes: {}, // Track votes per department
+    voters: {},
+    departmentVotes: {},
     adminCredentials: {
         username: "election2026",
         password: "admin123"
     },
-    // Valid student admission numbers
     validStudents: ["NUU001", "NUU002", "NUU003", "NUU004", "NUU005"]
 };
 
-let lastVisitedSection = 'president'; // Track last visited section for admin panel
+let lastVisitedSection = 'president';
 
-// Initialize voting data
-function initializeVotingData() {
-    // Check if votes exist in localStorage
-    const savedVotes = localStorage.getItem('studentCouncilVotes');
-    if (savedVotes) {
-        electionData.votes = JSON.parse(savedVotes);
-    } else {
-        // Initialize votes
-        electionData.positions.forEach(position => {
-            electionData.votes[position.id] = {};
-            position.candidates.forEach(candidate => {
-                electionData.votes[position.id][candidate.id] = 0;
-            });
-        });
-        saveVotesToStorage();
-    }// Updated JavaScript for Django backend
+// ===== INITIALIZATION =====
 async function initializeVotingData() {
     try {
         // Fetch positions from Django
@@ -1329,28 +1252,32 @@ async function initializeVotingData() {
         renderAllCandidatesPage();
         
         // Fetch and display results
-        await updateStatistics();
+        await fetchResults();
         
     } catch (error) {
         console.error('Error initializing data:', error);
+        // Fallback to localStorage if Django fails
+        loadFromLocalStorage();
     }
 }
+
+// Fallback to localStorage if Django is unavailable
+function loadFromLocalStorage() {
+    const savedVotes = localStorage.getItem('studentCouncilVotes');
+    if (savedVotes) {
+        electionData.votes = JSON.parse(savedVotes);
+    }
     
-    // Check if voters exist in localStorage
     const savedVoters = localStorage.getItem('studentCouncilVoters');
     if (savedVoters) {
         electionData.voters = JSON.parse(savedVoters);
     }
     
-    // Check if department votes exist
     const savedDeptVotes = localStorage.getItem('studentCouncilDeptVotes');
     if (savedDeptVotes) {
         electionData.departmentVotes = JSON.parse(savedDeptVotes);
-    } else {
-        electionData.departmentVotes = {};
     }
     
-    // Check voting status
     const votingStatus = localStorage.getItem('studentCouncilVotingStatus');
     electionData.isVotingActive = votingStatus === 'active';
     
@@ -1360,19 +1287,7 @@ async function initializeVotingData() {
     updateStatistics();
 }
 
-// Save votes to localStorage
-function saveVotesToStorage() {
-    localStorage.setItem('studentCouncilVotes', JSON.stringify(electionData.votes));
-    localStorage.setItem('studentCouncilVoters', JSON.stringify(electionData.voters));
-    localStorage.setItem('studentCouncilDeptVotes', JSON.stringify(electionData.departmentVotes));
-}
-
-// Save voting status
-function saveVotingStatus() {
-    localStorage.setItem('studentCouncilVotingStatus', electionData.isVotingActive ? 'active' : 'inactive');
-}
-
-// Update voting UI based on status
+// ===== UI UPDATE FUNCTIONS =====
 function updateVotingUI() {
     const statusIndicator = document.getElementById('status-indicator');
     const statusText = document.getElementById('voting-status-text');
@@ -1394,7 +1309,6 @@ function updateVotingUI() {
     }
 }
 
-// Render voting candidates
 function renderVotingCandidates() {
     electionData.positions.forEach(position => {
         const container = document.getElementById(`${position.id}-candidates`);
@@ -1416,18 +1330,13 @@ function renderVotingCandidates() {
                 </div>
             `;
             
-            // Add click event to select candidate
             candidateElement.addEventListener('click', function() {
                 const radioInput = this.querySelector('input[type="radio"]');
                 radioInput.checked = true;
                 
-                // Remove selected class from all candidates in this position
                 const allCandidates = container.querySelectorAll('.candidate-option');
                 allCandidates.forEach(c => c.classList.remove('selected'));
-                
-                // Add selected class to clicked candidate
                 this.classList.add('selected');
-                
                 validateVote();
             });
             
@@ -1436,7 +1345,6 @@ function renderVotingCandidates() {
     });
 }
 
-// Render all candidates page
 function renderAllCandidatesPage() {
     const container = document.getElementById('all-candidates-container');
     if (!container) return;
@@ -1460,7 +1368,7 @@ function renderAllCandidatesPage() {
     });
 }
 
-// Validate vote (check if all positions have a selection)
+// ===== VOTE VALIDATION =====
 function validateVote() {
     let allSelected = true;
     const validationMsg = document.getElementById('vote-validation');
@@ -1468,9 +1376,7 @@ function validateVote() {
     
     electionData.positions.forEach(position => {
         const selected = document.querySelector(`input[name="${position.id}"]:checked`);
-        if (!selected) {
-            allSelected = false;
-        }
+        if (!selected) allSelected = false;
     });
     
     if (allSelected) {
@@ -1486,7 +1392,7 @@ function validateVote() {
     return allSelected;
 }
 
-// Open voter authentication modal
+// ===== VOTER AUTHENTICATION =====
 function authenticateVoter() {
     if (!validateVote()) {
         alert('Please select a candidate for each position before voting.');
@@ -1504,12 +1410,10 @@ function authenticateVoter() {
     document.getElementById('auth-error').style.display = 'none';
 }
 
-// Close auth modal
 function closeAuthModal() {
     document.getElementById('auth-modal').style.display = 'none';
 }
 
-// Verify voter using admission number
 async function verifyVoter() {
     const admissionInput = document.getElementById('admission-number').value.trim().toUpperCase();
     const department = document.getElementById('department').value;
@@ -1523,12 +1427,9 @@ async function verifyVoter() {
     }
     
     try {
-        // Verify with Django
         const response = await fetch('/api/verify-voter/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 admission_number: admissionInput,
                 department: department
@@ -1538,7 +1439,6 @@ async function verifyVoter() {
         const data = await response.json();
         
         if (data.success) {
-            // Record the vote
             await recordVote(admissionInput, department);
             closeAuthModal();
         } else {
@@ -1551,10 +1451,9 @@ async function verifyVoter() {
         errorDiv.style.display = 'block';
     }
 }
-// Record the vote
-// Updated recordVote function for Django
+
+// ===== VOTE RECORDING (DJANGO VERSION) =====
 async function recordVote(voterID, department) {
-    // Get all selected votes
     const votes = [];
     electionData.positions.forEach(position => {
         const selectedCandidate = document.querySelector(`input[name="${position.id}"]:checked`);
@@ -1567,12 +1466,9 @@ async function recordVote(voterID, department) {
     });
     
     try {
-        // Send vote to Django
         const response = await fetch('/api/cast-vote/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 admission_number: voterID,
                 votes: votes
@@ -1582,10 +1478,7 @@ async function recordVote(voterID, department) {
         const data = await response.json();
         
         if (data.success) {
-            // Update local UI
             showVoteConfirmation(voterID);
-            
-            // Refresh results from Django
             await fetchResults();
         } else {
             alert('Error: ' + data.error);
@@ -1596,34 +1489,29 @@ async function recordVote(voterID, department) {
     }
 }
 
-// Fetch results from Django
+// ===== RESULTS FETCHING =====
 async function fetchResults() {
     try {
         const response = await fetch('/api/results/');
         const data = await response.json();
-        
-        // Update your UI with Django data
         updateStatisticsWithDjangoData(data);
     } catch (error) {
         console.error('Error fetching results:', error);
+        updateStatistics(); // Fallback to localStorage stats
     }
 }
 
-// Update UI with Django data
 function updateStatisticsWithDjangoData(data) {
-    // Update stats dashboard
     const statsContainer = document.getElementById('stats-dashboard');
     if (statsContainer) {
         statsContainer.innerHTML = `
             <div class="stat-card">
-                <div class="stat-value">${data.total_voters}</div>
+                <div class="stat-value">${data.total_voters || 0}</div>
                 <div class="stat-label">Total Votes Cast</div>
             </div>
-            <!-- Add more stats as needed -->
         `;
     }
     
-    // Update department breakdown
     const deptContainer = document.getElementById('department-breakdown-list');
     if (deptContainer && data.department_breakdown) {
         let deptHTML = '';
@@ -1635,84 +1523,12 @@ function updateStatisticsWithDjangoData(data) {
                 </div>
             `;
         });
-        deptContainer.innerHTML = deptHTML;
-    }
-}
-function recordVote(voterID, department) {
-    // Mark voter as voted with department info
-    electionData.voters[voterID] = {
-        department: department,
-        votedAt: new Date().toISOString()
-    };
-    
-    // Update department vote count
-    if (!electionData.departmentVotes[department]) {
-        electionData.departmentVotes[department] = 0;
-    }
-    electionData.departmentVotes[department] += 1;
-    
-    // Record votes for each position
-    electionData.positions.forEach(position => {
-        const selectedCandidate = document.querySelector(`input[name="${position.id}"]:checked`);
-        if (selectedCandidate) {
-            electionData.votes[position.id][selectedCandidate.value] += 1;
-        }
-    });
-    
-    // Save to storage
-    saveVotesToStorage();
-    
-    // Clear selections
-    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-        radio.checked = false;
-        radio.closest('.candidate-option').classList.remove('selected');
-    });
-    
-    // Update validation
-    validateVote();
-    
-    // Update statistics
-    updateStatistics();
-}
-async function initializeVotingData() {
-    try {
-        // Fetch positions from Django
-        const positionsResponse = await fetch('/api/positions/');
-        const positionsData = await positionsResponse.json();
-        
-        // Fetch settings
-        const settingsResponse = await fetch('/api/settings/');
-        const settingsData = await settingsResponse.json();
-        
-        // Update electionData
-        electionData.positions = positionsData.positions;
-        electionData.isVotingActive = settingsData.is_voting_active;
-        
-        // Initialize votes object
-        electionData.votes = {};
-        electionData.positions.forEach(position => {
-            electionData.votes[position.id] = {};
-            position.candidates.forEach(candidate => {
-                electionData.votes[position.id][candidate.id] = 0;
-            });
-        });
-        
-        // Update UI
-        updateVotingUI();
-        renderVotingCandidates();
-        renderAllCandidatesPage();
-        
-        // Fetch and display results
-        await fetchResults();
-        
-    } catch (error) {
-        console.error('Error initializing data:', error);
+        deptContainer.innerHTML = deptHTML || '<p style="text-align: center; color: #7f8c8d;">No votes recorded yet.</p>';
     }
 }
 
-// Show vote confirmation
+// ===== CONFIRMATION MODAL =====
 function showVoteConfirmation(voterID) {
-    // Build vote summary
     let summaryHTML = '';
     electionData.positions.forEach(position => {
         const selectedCandidate = document.querySelector(`input[name="${position.id}"]:checked`);
@@ -1728,25 +1544,20 @@ function showVoteConfirmation(voterID) {
     document.getElementById('confirmation-modal').style.display = 'flex';
 }
 
-// Close confirmation modal
 function closeConfirmationModal() {
     document.getElementById('confirmation-modal').style.display = 'none';
 }
 
-// Update statistics dashboard
+// ===== STATISTICS (LOCALSTORAGE FALLBACK) =====
 function updateStatistics() {
     const statsContainer = document.getElementById('stats-dashboard');
     const deptContainer = document.getElementById('department-breakdown-list');
     
     if (!statsContainer || !deptContainer) return;
     
-    // Calculate total votes
     let totalVotes = Object.keys(electionData.voters).length;
     
-    // Calculate votes per position
-    let presidentVotes = 0;
-    let secretaryVotes = 0;
-    let educationVotes = 0;
+    let presidentVotes = 0, secretaryVotes = 0, educationVotes = 0;
     
     if (electionData.votes.president) {
         presidentVotes = Object.values(electionData.votes.president).reduce((a, b) => a + b, 0);
@@ -1758,7 +1569,6 @@ function updateStatistics() {
         educationVotes = Object.values(electionData.votes.education).reduce((a, b) => a + b, 0);
     }
     
-    // Update stats dashboard
     statsContainer.innerHTML = `
         <div class="stat-card">
             <div class="stat-value">${totalVotes}</div>
@@ -1778,7 +1588,6 @@ function updateStatistics() {
         </div>
     `;
     
-    // Update department breakdown
     let deptHTML = '';
     const departments = [
         "Automative Engineering", "Agriculture Extensions", "Building and Construction", "Beauty and Hairdressing",
@@ -1798,31 +1607,22 @@ function updateStatistics() {
         }
     });
     
-    // If no departments have voted yet
-    if (deptHTML === '') {
-        deptHTML = '<p style="text-align: center; color: #7f8c8d;">No votes recorded yet.</p>';
-    }
-    
-    deptContainer.innerHTML = deptHTML;
+    deptContainer.innerHTML = deptHTML || '<p style="text-align: center; color: #7f8c8d;">No votes recorded yet.</p>';
 }
 
-// Refresh statistics
 function refreshStats() {
-    updateStatistics();
+    fetchResults();
     alert('Statistics refreshed!');
 }
 
-// Admin functions
+// ===== ADMIN FUNCTIONS =====
 function showAdminLogin() {
-    // Save the current visible section before login
     const sections = document.querySelectorAll(".content-section");
     sections.forEach(s => {
         if (s.style.display === "block") {
             lastVisitedSection = s.id.replace("-section", "");
         }
     });
-
-    // Show the admin login modal
     document.getElementById("admin-modal").style.display = "block";
 }
 
@@ -1836,8 +1636,6 @@ function closeAdminModal() {
 function exitAdminPanel() {
     document.getElementById("admin-panel").style.display = "none";
     document.getElementById("admin-modal").style.display = "none";
-    
-    // Show the last visited section again
     showSection(lastVisitedSection);
 }
 
@@ -1848,19 +1646,14 @@ function verifyAdmin() {
 
     if (username === electionData.adminCredentials.username && password === electionData.adminCredentials.password) {
         adminError.style.display = "none";
-        
-        // Hide login modal
         document.getElementById("admin-modal").style.display = "none";
         
-        // Show admin panel
         const adminPanel = document.getElementById("admin-panel");
         adminPanel.style.display = "block";
         
-        // Hide other sections to avoid overlap
         const sections = document.querySelectorAll(".content-section");
         sections.forEach(s => s.style.display = "none");
         
-        // Scroll to top of admin panel
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         adminError.style.display = "block";
@@ -1869,29 +1662,28 @@ function verifyAdmin() {
 
 function openVoting() {
     electionData.isVotingActive = true;
-    saveVotingStatus();
+    localStorage.setItem('studentCouncilVotingStatus', 'active');
     updateVotingUI();
     alert('Voting is now OPEN!');
 }
 
 function pauseVoting() {
     electionData.isVotingActive = false;
-    saveVotingStatus();
+    localStorage.setItem('studentCouncilVotingStatus', 'inactive');
     updateVotingUI();
-    alert('Voting has been PAUSED. No new votes can be cast.');
+    alert('Voting has been PAUSED.');
 }
 
 function closeVoting() {
     if (confirm('Are you sure you want to END the voting? This cannot be undone.')) {
         electionData.isVotingActive = false;
-        saveVotingStatus();
+        localStorage.setItem('studentCouncilVotingStatus', 'inactive');
         updateVotingUI();
-        alert('Voting is now CLOSED. No more votes can be cast.');
+        alert('Voting is now CLOSED.');
     }
 }
 
 function viewResults() {
-    // Build results table
     let resultsHTML = '';
     
     electionData.positions.forEach(position => {
@@ -1900,15 +1692,13 @@ function viewResults() {
         resultsHTML += `<thead><tr><th>Candidate</th><th>Votes</th><th>Percentage</th></tr></thead>`;
         resultsHTML += `<tbody>`;
         
-        // Calculate total votes for this position
         let totalVotes = 0;
         position.candidates.forEach(candidate => {
-            totalVotes += electionData.votes[position.id][candidate.id] || 0;
+            totalVotes += electionData.votes[position.id]?.[candidate.id] || 0;
         });
         
-        // Add each candidate's results
         position.candidates.forEach(candidate => {
-            const votes = electionData.votes[position.id][candidate.id] || 0;
+            const votes = electionData.votes[position.id]?.[candidate.id] || 0;
             const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
             
             resultsHTML += `<tr>`;
@@ -1923,7 +1713,6 @@ function viewResults() {
         resultsHTML += `<hr style="margin: 1.5rem 0;">`;
     });
     
-    // Add overall stats
     let totalVotesAll = Object.keys(electionData.voters).length;
     
     resultsHTML += `<div style="background-color: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">`;
@@ -1931,7 +1720,6 @@ function viewResults() {
     resultsHTML += `<p>Total votes cast: <strong>${totalVotesAll}</strong></p>`;
     resultsHTML += `<p>Voting status: <strong>${electionData.isVotingActive ? 'ACTIVE' : 'CLOSED'}</strong></p>`;
     
-    // Add department breakdown summary
     let topDepartments = Object.entries(electionData.departmentVotes)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3);
@@ -1956,7 +1744,6 @@ function closeResultsModal() {
 }
 
 function exportResults() {
-    // Create a downloadable file with results
     let resultsText = "STUDENT COUNCIL ELECTION RESULTS\n";
     resultsText += "===============================\n\n";
     resultsText += `Generated on: ${new Date().toLocaleString()}\n`;
@@ -1966,14 +1753,13 @@ function exportResults() {
         resultsText += `${position.title}\n`;
         resultsText += "--------------------------------\n";
         
-        // Calculate total votes for this position
         let totalVotes = 0;
         position.candidates.forEach(candidate => {
-            totalVotes += electionData.votes[position.id][candidate.id] || 0;
+            totalVotes += electionData.votes[position.id]?.[candidate.id] || 0;
         });
         
         position.candidates.forEach(candidate => {
-            const votes = electionData.votes[position.id][candidate.id] || 0;
+            const votes = electionData.votes[position.id]?.[candidate.id] || 0;
             const percentage = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
             
             resultsText += `${candidate.name}: ${votes} votes (${percentage}%)\n`;
@@ -1982,7 +1768,6 @@ function exportResults() {
         resultsText += `Total: ${totalVotes} votes\n\n`;
     });
     
-    // Add department breakdown
     resultsText += `DEPARTMENT VOTING BREAKDOWN\n`;
     resultsText += "--------------------------------\n";
     Object.entries(electionData.departmentVotes)
@@ -1991,7 +1776,6 @@ function exportResults() {
             resultsText += `${dept}: ${count} vote${count !== 1 ? 's' : ''}\n`;
         });
     
-    // Create blob and download link
     const blob = new Blob([resultsText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2006,8 +1790,7 @@ function exportResults() {
 }
 
 function resetVotes() {
-    if (confirm('WARNING: This will reset ALL votes, voter records, and the ID counter. Are you sure?')) {
-        // Reset votes
+    if (confirm('WARNING: This will reset ALL votes, voter records. Are you sure?')) {
         electionData.positions.forEach(position => {
             electionData.votes[position.id] = {};
             position.candidates.forEach(candidate => {
@@ -2015,39 +1798,31 @@ function resetVotes() {
             });
         });
         
-        // Reset voters
         electionData.voters = {};
-        
-        // Reset department votes
         electionData.departmentVotes = {};
         
-        // Save to storage
-        saveVotesToStorage();
+        localStorage.setItem('studentCouncilVotes', JSON.stringify(electionData.votes));
+        localStorage.setItem('studentCouncilVoters', JSON.stringify(electionData.voters));
+        localStorage.setItem('studentCouncilDeptVotes', JSON.stringify(electionData.departmentVotes));
         
-        // Update statistics
         updateStatistics();
-        
         alert('All votes and voter records have been reset.');
-        viewResults(); // Refresh results view
+        viewResults();
     }
 }
 
-// Navigation function
+// ===== NAVIGATION =====
 function showSection(sectionId) {
-    // Hide all sections
     document.querySelectorAll('.content-section').forEach(section => {
         section.style.display = 'none';
     });
     
-    // Show the selected section
     document.getElementById(`${sectionId}-section`).style.display = 'block';
     
-    // Update active nav link
     document.querySelectorAll('nav a').forEach(link => {
         link.classList.remove('active');
     });
     
-    // Find and activate the clicked nav link
     document.querySelectorAll('nav a').forEach(link => {
         if (link.textContent.includes(sectionId.replace('-', ' ')) || 
            (sectionId === 'president' && link.textContent.includes('President')) ||
@@ -2058,18 +1833,15 @@ function showSection(sectionId) {
         }
     });
     
-    // Scroll to top
     window.scrollTo(0, 0);
     
-    // Update statistics if viewing stats page
     if (sectionId === 'stats') {
-        updateStatistics();
+        fetchResults();
     }
 }
 
-// Countdown timer for voting
+// ===== COUNTDOWN TIMER =====
 function startCountdown() {
-    // Set election date (October 15, 2023)
     const electionDate = new Date('October 15, 2023 08:00:00').getTime();
     
     function updateCountdown() {
@@ -2081,7 +1853,6 @@ function startCountdown() {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
         
-        // Display the countdown
         const countdownElement = document.getElementById('countdown');
         if (countdownElement) {
             if (distance < 0) {
@@ -2091,25 +1862,23 @@ function startCountdown() {
             }
         }
         
-        // Update election date display
         const electionTimer = document.getElementById('election-timer');
         if (electionTimer) {
             if (distance < 0) {
                 electionTimer.innerHTML = "Election: Voting Now Open!";
                 electionTimer.style.backgroundColor = "#27ae60";
-            } else if (distance < 86400000) { // Less than 24 hours
+            } else if (distance < 86400000) {
                 electionTimer.innerHTML = "Election: Voting Opens Tomorrow!";
                 electionTimer.style.backgroundColor = "#f39c12";
             }
         }
     }
     
-    // Update countdown every second
     updateCountdown();
     setInterval(updateCountdown, 1000);
 }
 
-// Feedback submission
+// ===== FEEDBACK =====
 function submitFeedback() {
     const department = document.getElementById('feedback-dept').value;
     const feedback = document.getElementById('feedback').value;
@@ -2124,29 +1893,24 @@ function submitFeedback() {
         return;
     }
     
-    // Show confirmation message
     document.getElementById('confirmation-message').style.display = 'block';
-    
-    // Clear form
     document.getElementById('feedback-dept').value = '';
     document.getElementById('feedback').value = '';
     
-    // Scroll to confirmation
     document.getElementById('confirmation-message').scrollIntoView({ behavior: 'smooth' });
     
-    // Hide confirmation after 5 seconds
     setTimeout(() => {
         document.getElementById('confirmation-message').style.display = 'none';
     }, 5000);
 }
 
-// Initialize the page
+// ===== INITIALIZE =====
 document.addEventListener('DOMContentLoaded', function() {
     showSection('president');
     initializeVotingData();
     startCountdown();
 });
-    </script>
+   </script>
     
 </body>
 </html>
