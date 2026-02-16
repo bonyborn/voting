@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Student Council - NUU TVC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="vote.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="logo-container">
+            <i class="fas fa-vote-yea logo-icon"></i>
+            <h1>The Student Council</h1>
+        </div>
+        <p class="tagline">Your Voice, Your Choice, Your Future - Auto-ID Voting System</p>
+        <div class="election-date" id="election-timer">Election: March, 2026</div>
+    </header>
+    
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="active" onclick="showSection('president')">School President</a>
+        <a href="#" onclick="showSection('secretary-general')">Secretary General</a>
+        <a href="#" onclick="showSection('education-secretary')">Education Secretary</a>
+        <a href="#" onclick="showSection('all-candidates')">All Candidates</a>
+        <a href="#" onclick="showSection('voting')">Online Voting</a>
+        <a href="#" onclick="showSection('feedback')">Voice Your Opinion</a>
+        <a href="#" onclick="showSection('stats')">Voting Statistics</a>
+    </nav>
+    
+    <!-- Main Content Container -->
+    <div class="container">
+        <!-- School President Section -->
+        <section id="president-section" class="content-section">
+            <h2 class="section-title">Candidate for School President</h2>
+            <div class="candidate-profile">
+                <div class="candidate-header">
+                    <img src="static/bony.jpg" alt="Boniface kathu - School President Candidate" class="candidate-photo">
+                    <div class="candidate-info">
+                        <h2 class="candidate-name">Boniface Kathu</h2>
+                        <h3 class="candidate-position">Candidate for School President</h3>
+                        <p class="candidate-bio">
+                            Boniface Kathu is a level six technician with a proven track record of leadership as former Class representative and Organizing secretary of the Research and Innovation club. 
+                            Boniface understands the diverse needs of our student body and is committed to making our school a more inclusive, engaging, and supportive environment for all students.
+                        </p>
+                        <div class="candidate-stats">
+                            <p><strong>Level:</strong> Six</p>
+                            <p><strong>Course:</strong> ICT</p>
+                            <p><strong>Experience:</strong> 1 year class representative</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="manifesto-section">
+                    <h3>My Vision for Our School</h3>
+                    <p>I believe in a school where every student feels heard, supported, and empowered to achieve their full potential. My presidency will focus on bridging the gap between administration and students, enhancing mental health resources, and creating more opportunities for student involvement in decision-making processes.</p>
+                    
+                    <h3>Key Agenda Items</h3>
+                    <ul class="agenda-list">
+                        <li>Establish a Student Mental Health Support Network with trained peer counselors</li>
+                        <li>Implement a "Green School Initiative" to reduce waste and promote sustainability</li>
+                        <li>Create a transparent budgeting system for student organizations</li>
+                        <li>Expand career counseling and internship opportunities for all grades</li>
+                        <li>Introduce a monthly "Principal-Student Forum" for direct dialogue</li>
+                        <li>Revitalize school spirit through new traditions and events</li>
+                        <li>Improve accessibility for students with disabilities across campus</li>
+                        <li>Launch a peer tutoring program connecting high-achieving students with those needing academic support</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Secretary General Section -->
+        <section id="secretary-general-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Candidate for Secretary General</h2>
+            <div class="candidate-profile">
+                <div class="candidate-header">
+                    <img src="" alt="Mary - Secretary General Candidate" class="candidate-photo">
+                    <div class="candidate-info">
+                        <h2 class="candidate-name">Mary</h2>
+                        <h3 class="candidate-position">Candidate for Secretary General</h3>
+                        <p class="candidate-bio">
+                            Mary is a junior known for her exceptional organizational skills and dedication to student advocacy. 
+                            As the current Secretary of the Student Activism Club and a contributor to the school newspaper, Mary has demonstrated 
+                            her ability to manage complex projects while ensuring all voices are heard. Her bilingual abilities (English and Spanish) 
+                            allow her to connect with a diverse range of students.
+                        </p>
+                        <div class="candidate-stats">
+                            <p><strong>Level:</strong> <em>pending</em></p>
+                            <p><strong>Course:</strong> Communications & Public Relations</p>
+                            <p><strong>Experience:</strong> 2 years in student organizations</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="manifesto-section">
+                    <h3>My Vision for Student Government</h3>
+                    <p>As Secretary General, I will ensure transparent communication between the student council, administration, and student body. I believe in documented accountability, accessible information, and creating systems that make student government more efficient and responsive to student needs.</p>
+                    
+                    <h3>Key Agenda Items</h3>
+                    <ul class="agenda-list">
+                        <li>Create a publicly accessible digital archive of all council meetings and decisions</li>
+                        <li>Implement a weekly email newsletter to keep students informed about council activities</li>
+                        <li>Establish a suggestion box system with guaranteed responses within 72 hours</li>
+                        <li>Streamline the process for student organizations to request funding</li>
+                        <li>Develop a mentorship program for underclassmen interested in student government</li>
+                        <li>Create a mobile app for school announcements and event notifications</li>
+                        <li>Improve documentation and follow-up on student complaints and suggestions</li>
+                        <li>Organize quarterly "State of the School" addresses from the student council</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Education Secretary Section -->
+        <section id="education-secretary-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Candidate for Cabinet Secretary for Education</h2>
+            <div class="candidate-profile">
+                <div class="candidate-header">
+                    <img src="static/mark.jpg" alt="Mark Vundi- Education Secretary Candidate" class="candidate-photo">
+                    <div class="candidate-info">
+                        <h2 class="candidate-name">Mark Vundi</h2>
+                        <h3 class="candidate-position">Candidate for Cabinet Secretary for Education</h3>
+                        <p class="candidate-bio">
+                            Mark Vundi is a senior with a passion for educational equity and innovation. As a National Merit Scholar and founder of the 
+                            "Students Teaching Students" initiative, Mark has firsthand experience with both the challenges and opportunities in our 
+                            educational system. His research on learning styles has been recognized at the state level, and he brings data-driven solutions 
+                            to educational challenges.
+                        </p>
+                        <div class="candidate-stats">
+                            <p><strong>Level:</strong> Six</p>
+                            <p><strong>Course:</strong> ICT</p>
+                            <p><strong>Experience:</strong> Tutoring coordinator, 3 years</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="manifesto-section">
+                    <h3>My Vision for Academic Excellence</h3>
+                    <p>I believe every student can achieve academic success with the right support system. As Education Secretary, I will work to bridge achievement gaps, promote innovative teaching methods, and ensure that all students have access to the resources they need to thrive academically.</p>
+                    
+                    <h3>Key Agenda Items</h3>
+                    <ul class="agenda-list">
+                        <li>Expand free peer tutoring to cover all major subjects</li>
+                        <li>Advocate for more flexible deadlines and assignment options</li>
+                        <li>Create a "Digital Resource Hub" with study materials for all courses</li>
+                        <li>Establish regular feedback sessions between students and teachers</li>
+                        <li>Implement a "Study Skills Workshop" series for all grade levels</li>
+                        <li>Promote inclusive curriculum that reflects diverse perspectives</li>
+                        <li>Increase access to advanced courses for underrepresented students</li>
+                        <li>Develop a "Finals Support Program" with extended library hours and stress-relief activities</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- All Candidates Section -->
+        <section id="all-candidates-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Meet All Candidates</h2>
+            <p style="text-align: center; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                Get to know all the candidates running for Student Council positions. Click on the "Rate This Candidate" button to share your feedback on each candidate.
+            </p>
+            
+            <div class="all-candidates" id="all-candidates-container">
+                <!-- Filled by JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Online Voting Section -->
+        <section id="voting-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Online Voting System</h2>
+            
+            <!-- Voting Controls -->
+            <div class="voting-controls">
+                <div class="voting-status">
+                    <div class="status-indicator" id="status-indicator"></div>
+                    <h3>Voting Status: <span id="voting-status-text">CLOSED</span></h3>
+                </div>
+                <div>
+                    <p id="voting-timer">Next Voter ID: <span id="next-voter-id-display">VOTER-001</span></p>
+                </div>
+            </div>
+            
+            <!-- Admin Panel (only visible to admin) -->
+            <div class="admin-panel" id="admin-panel" style="display:none;">
+                <h3><i class="fas fa-user-shield"></i> Election Commission Panel</h3>
+                <div class="admin-controls">
+                    <button class="admin-btn" onclick="openVoting()"><i class="fas fa-play-circle"></i> Start Voting</button>
+                    <button class="admin-btn warning" onclick="pauseVoting()"><i class="fas fa-pause-circle"></i> Pause Voting</button>
+                    <button class="admin-btn danger" onclick="closeVoting()"><i class="fas fa-stop-circle"></i> End Voting</button>
+                    <button class="admin-btn" onclick="viewResults()"><i class="fas fa-chart-bar"></i> View Results</button>
+                    <button class="admin-btn" onclick="resetVotes()"><i class="fas fa-redo"></i> Reset Votes</button>
+                    <button class="admin-btn" onclick="generateTestVotes()"><i class="fas fa-vial"></i> Generate Test Votes</button>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                   <button class="admin-btn" onclick="exitAdminPanel()" style="background-color: #7f8c8d;">
+                        <i class="fas fa-sign-out-alt"></i> Exit Admin Panel
+                    </button>
+
+                </div>
+            </div>
+            
+            <!-- Voting Container -->
+            <div class="vote-container" id="vote-container">
+                <div class="voting-instructions">
+                    <h3><i class="fas fa-info-circle"></i> Voting Instructions</h3>
+                    <p>1. Select ONE candidate for each position by clicking on their card.</p>
+                    <p>2. You must vote in all positions for your ballot to be valid.</p>
+                    <p>3. Review your selections before submitting.</p>
+                    <p>4. Once submitted, your vote cannot be changed.</p>
+                    <p><strong>Note:</strong> Your voter ID will be automatically generated when you vote.</p>
+                </div>
+                
+                <!-- President Voting -->
+                <div class="vote-position">
+                    <h3 class="position-title">1. School President</h3>
+                    <div class="candidates-grid" id="president-candidates">
+                        <!-- Filled by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Secretary General Voting -->
+                <div class="vote-position">
+                    <h3 class="position-title">2. Secretary General</h3>
+                    <div class="candidates-grid" id="secretary-candidates">
+                        <!-- Filled by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Education Secretary Voting -->
+                <div class="vote-position">
+                    <h3 class="position-title">3. Cabinet Secretary for Education</h3>
+                    <div class="candidates-grid" id="education-candidates">
+                        <!-- Filled by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Submit Vote Section -->
+                <div class="vote-submit-section">
+                    <p id="vote-validation" style="margin-bottom: 1rem; color: #e74c3c; font-weight: 600;"></p>
+                    <button class="vote-btn" id="submit-vote-btn" onclick="authenticateVoter()">
+                        <i class="fas fa-check-circle"></i> Submit Your Vote
+                    </button>
+                    <p style="margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                        <i class="fas fa-lock"></i> Your vote is anonymous and secure
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Closed Voting Message -->
+            <div id="closed-voting-message" style="text-align: center; padding: 3rem; background-color: white; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.08);">
+                <i class="fas fa-lock" style="font-size: 4rem; color: #e74c3c; margin-bottom: 1.5rem;"></i>
+                <h3>Voting is Currently Closed</h3>
+                <p style="max-width: 600px; margin: 1rem auto 2rem;">The online voting system will be activated during the official voting period. Please check back during the election dates or contact the election commission for more information.</p>
+                <div class="election-date" id="next-election-date">Next Election: October 15, 2023</div>
+            </div>
+        </section>
+        
+        <!-- Feedback Section -->
+        <section id="feedback-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Voice Your Opinion & Needs</h2>
+            <div class="feedback-section">
+                <p style="margin-bottom: 1.5rem;">Your feedback is essential for an effective student government. Share your opinions, concerns, and suggestions with the student council candidates and help shape their agendas.</p>
+                
+                <div class="feedback-form">
+                    <div class="form-group">
+                        <label for="feedback-dept">Select Department:</label>
+                        <select id="feedback-dept">
+                            <option value="">Select your department</option>
+                            <option value="Automotive Engineering">Automotive Engineering</option>
+                            <option value="Agriculture Extensions">Agriculture Extensions</option>
+                            <option value="Building and Construction">Building and Construction</option>
+                            <option value="Beauty and Hairdressing">Beauty and Hairdressing</option>
+                            <option value="Callinery Arts">Callinery Arts</option>
+                            <option value="Computing and Informatics">Computing and Informatics</option>
+                            <option value="Electrical Engineering">Electrical Engineering</option>
+                            <option value="Fashion and Design">Fashion and Design</option>
+                            <option value="Business and secretarial studies">Business and secretarial studies</option>
+                            <option value="Human Resource Management">Human Resource Management</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="feedback">Your Opinion, Needs, or Suggestions:</label>
+                        <textarea id="feedback" placeholder="Please share your thoughts, concerns, or suggestions for improvement. What issues are most important to you? What changes would you like to see in our school?"></textarea>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="submit-btn" onclick="submitFeedback()">
+                            <i class="fas fa-paper-plane"></i> Submit Your Feedback
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="confirmation-message" style="display: none; margin-top: 2rem; padding: 1.5rem; background-color: #d4edda; color: #155724; border-radius: 8px; text-align: center;">
+                    <h3><i class="fas fa-check-circle"></i> Thank You!</h3>
+                    <p>Your feedback has been submitted successfully. The student council candidates will review your input.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Voting Statistics Section -->
+        <section id="stats-section" class="content-section" style="display:none;">
+            <h2 class="section-title">Voting Statistics Dashboard</h2>
+            
+            <div class="stats-dashboard" id="stats-dashboard">
+                <!-- Stats will be populated here -->
+            </div>
+            
+            <div class="department-breakdown">
+                <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Department Voting Breakdown</h3>
+                <div id="department-breakdown-list">
+                    <!-- Department breakdown will be populated here -->
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="admin-btn" onclick="refreshStats()" style="background-color: var(--secondary);">
+                    <i class="fas fa-sync-alt"></i> Refresh Statistics
+                </button>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Voter Authentication Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            <h2><i class="fas fa-user-check"></i> Voter Authentication</h2>
+            
+            <div class="auto-id-display">
+                <div class="auto-id-label">Your Unique Voter ID:</div>
+                <div class="auto-id-value" id="auto-voter-id">VOTER-001</div>
+                <div class="auto-id-note">This ID is automatically generated and cannot be changed</div>
+            </div>
+            
+            <p>Please select your department to proceed with voting.</p>
+            
+            <div class="form-group">
+                <label for="department">Your Department:</label>
+                <select id="department">
+                    <option value="">Select your department</option>
+                    <option value="Automotive Engineering">Automotive Engineering</option>
+                    <option value="Agriculture Extensions">Agriculture Extensions</option>
+                    <option value="Building and Construction">Building and Construction</option>
+                    <option value="Beauty and Hairdressing">Beauty and Hairdressing</option>
+                    <option value="Callinery Arts">Callinery Arts</option>
+                    <option value="Computing and Informatics">Computing and Informatics</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Fashion and Design">Fashion and Design</option>
+                    <option value="Business and secretarial studies">Business and secretarial studies</option>
+                    <option value="Human Resource Management">Human Resource Management</option>
+                    <option value="Other">Other</option>
+                </select>
+                <div class="form-group">
+                    <label for="admission-number">Admission Number:</label>
+                    <input type="text" id="admission-number" placeholder="Enter your admission number">
+                </div>
+
+            </div>
+            
+            <div id="auth-error" style="color: #e74c3c; margin-bottom: 1rem; display: none;">
+                <i class="fas fa-exclamation-circle"></i> <span id="error-text">Please select your department.</span>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="quick-btn primary" onclick="verifyVoter()">
+                    <i class="fas fa-check"></i> Vote Now
+                </button>
+                <button class="quick-btn secondary" onclick="generateNewID()">
+                    <i class="fas fa-redo"></i> Get New ID
+                </button>
+            </div>
+            
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d; text-align: center;">
+                <i class="fas fa-info-circle"></i> Your voter ID is automatically generated and stored for this session.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Admin Login Modal -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+            <h2><i class="fas fa-user-shield"></i> Election Commission Login</h2>
+            <p>Enter admin credentials to access the election control panel.</p>
+            
+            <div class="form-group">
+                <label for="admin-username">Username:</label>
+                <input type="text" id="admin-username" placeholder="Enter admin username">
+            </div>
+            
+            <div class="form-group">
+                <label for="admin-password">Password:</label>
+                <input type="password" id="admin-password" placeholder="Enter admin password">
+            </div>
+            
+            <div id="admin-error" style="color: #e74c3c; margin-bottom: 1rem; display: none;">
+                <i class="fas fa-exclamation-circle"></i> Invalid admin credentials.
+            </div>
+            
+            <button class="submit-btn" onclick="verifyAdmin()">
+                <i class="fas fa-sign-in-alt"></i> Login to Admin Panel
+            </button>
+            
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d; text-align: center;">
+                <i class="fas fa-lock"></i> Restricted access - Election Commission only
+            </p>
+        </div>
+    </div>
+    
+    <!-- Results Modal -->
+    <div id="results-panel">
+        <!-- Candidate list -->
+        <div id="results-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 2rem;">
+            <!-- Candidate results will be dynamically inserted here -->
+        </div>
+
+        <!-- Chart -->
+        <canvas id="results-chart" width="400" height="200"></canvas>
+    </div>
+  
+    <!-- Results Modal -->
+<div id="results-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeResultsModal()">&times;</span>
+        <h2><i class="fas fa-chart-bar"></i> Live Election Results</h2>
+        <p>Current vote counts (updated in real-time)</p>
+        
+        <!-- 🔧 FIX: interactive results container -->
+        <div id="results-panel">
+            <!-- Results will be populated here dynamically -->
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;" class="scroll">
+            <button class="admin-btn" onclick="closeResultsModal()" style="background-color: #7f8c8d;">
+                Close Results
+            </button>
+            <button class="admin-btn" onclick="exportResults()">
+                <i class="fas fa-download"></i> Export Results
+            </button>
+        </div>
+    </div>
+</div>
+
+    
+    <!-- Vote Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeConfirmationModal()">&times;</span>
+            <div style="text-align: center;">
+                <i class="fas fa-check-circle" style="font-size: 4rem; color: #27ae60; margin-bottom: 1.5rem;"></i>
+                <h2>Vote Successfully Cast!</h2>
+                <p>Thank you for participating in the Student Council Election.</p>
+                <p>Your vote has been recorded anonymously and securely.</p>
+                
+                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; text-align: center;">
+                    <h4>Your Voter ID:</h4>
+                    <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary); margin: 1rem 0;" id="confirmed-voter-id">
+                        VOTER-001
+                    </div>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Save this ID for your records</p>
+                </div>
+                
+                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; text-align: left;">
+                    <h4>Your Selections:</h4>
+                    <div id="vote-summary">
+                        <!-- Vote summary will be displayed here -->
+                    </div>
+                </div>
+                
+                <p style="color: #7f8c8d; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Election results will be announced after voting closes.
+                </p>
+                
+                <button class="submit-btn" onclick="closeConfirmationModal()" style="margin-top: 1.5rem;">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <h3>The Student Council - Auto-ID Voting System</h3>
+            <p>Secure • Anonymous • Automatic ID Generation</p>
+            <div style="margin: 1.5rem 0;">
+                <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-instagram"></i></a>
+                <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-twitter"></i></a>
+                <a href="#" style="color: white; margin: 0 10px;"><i class="fab fa-facebook"></i></a>
+                <a href="#" style="color: white; margin: 0 10px;"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p>© 2026 The Student Council Election Platform-NUU TVC. All rights reserved.</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                <i class="fas fa-shield-alt"></i> Voter IDs are automatically generated and tracked.
+            </p>
+           <button onclick="showAdminLogin()" style="background: transparent; border: 1px solid white; color: white; padding: 0.5rem 1rem; border-radius: 4px; margin-top: 1rem; cursor: pointer;">
+                <i class="fas fa-cog"></i> Election Commission Panel
+            </button>
+
+        </div>
+    </footer>
+
+    <script src="vote.js"></script>
+    
+</body>
+</html>
