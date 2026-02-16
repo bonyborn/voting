@@ -91,7 +91,42 @@ function initializeVotingData() {
             });
         });
         saveVotesToStorage();
+    }// Updated JavaScript for Django backend
+async function initializeVotingData() {
+    try {
+        // Fetch positions from Django
+        const positionsResponse = await fetch('/api/positions/');
+        const positionsData = await positionsResponse.json();
+        
+        // Fetch settings
+        const settingsResponse = await fetch('/api/settings/');
+        const settingsData = await settingsResponse.json();
+        
+        // Update electionData with server data
+        electionData.positions = positionsData.positions;
+        electionData.isVotingActive = settingsData.is_voting_active;
+        
+        // Initialize votes object
+        electionData.votes = {};
+        electionData.positions.forEach(position => {
+            electionData.votes[position.id] = {};
+            position.candidates.forEach(candidate => {
+                electionData.votes[position.id][candidate.id] = 0;
+            });
+        });
+        
+        // Update UI
+        updateVotingUI();
+        renderVotingCandidates();
+        renderAllCandidatesPage();
+        
+        // Fetch and display results
+        await updateStatistics();
+        
+    } catch (error) {
+        console.error('Error initializing data:', error);
     }
+}
     
     // Check if voters exist in localStorage
     const savedVoters = localStorage.getItem('studentCouncilVoters');
